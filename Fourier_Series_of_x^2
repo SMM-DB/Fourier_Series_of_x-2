@@ -1,0 +1,84 @@
+%% Setting Up Code
+clear all
+close all
+clc
+syms x n L
+
+%% Initializing Function
+f = x^2;
+L = 5;
+
+Summation_Limit = 100;
+x_max = 20;
+x_min = -1*x_max;
+x_values = linspace(x_min, x_max);
+
+%% Algebra Manipulation on Fourier Series Formula
+Trig_Input_Raw = (n*pi*x)/L;
+
+Coefficient_1_Raw = 1/(1*L);
+Coefficient_1 = subs(Coefficient_1_Raw, L ,L);
+
+Coefficient_2_Raw = 1/(2*L);
+Coefficient_2 = subs(Coefficient_2_Raw, L ,L);
+
+Sin_Correction = sin(pi*n);
+Cos_Correction = cos(pi*n);
+
+%% Calculating a_o
+Unintegrated_ao = f;
+a_o = subs(eval(subs(Coefficient_2 * int(Unintegrated_ao, -L, L), Sin_Correction, 0)), Cos_Correction, (-1)^n)
+
+%% Calculating an
+Unintegrated_an = f * cos(Trig_Input_Raw);
+a_n = subs(eval(subs(Coefficient_1 * int(Unintegrated_an, -L, L), Sin_Correction, 0)), Cos_Correction, (-1)^n)
+
+
+%% Calculating bn
+Unintegrated_bn = f * sin(Trig_Input_Raw);
+b_n = subs(eval(subs(Coefficient_1 * int(Unintegrated_bn, -L, L), Sin_Correction, 0)), Cos_Correction, (-1)^n)
+
+%% Summation
+To_Be_Summation = (a_n*cos(Trig_Input_Raw)) + (b_n*sin(Trig_Input_Raw))
+
+for N = 1:Summation_Limit
+    nf_values(N) = eval(subs(To_Be_Summation, n, N));
+    a_n_n(N) = eval(subs(a_n*cos(Trig_Input_Raw), n, N));
+    b_n_n(N) = eval(subs(b_n*sin(Trig_Input_Raw), n, N));
+end
+
+F(x) = eval(subs(a_o + sum(nf_values), L , L));
+A = eval(subs(sum(a_n_n), L , L));
+B = eval(subs(sum(b_n_n), L , L));
+
+xf_values = zeros(1, Summation_Limit);
+for i = 1:Summation_Limit
+    xf_values(i) = subs(F(x), x, x_values(i));
+    f_values(i) = subs(f, x, x_values(i));
+    a_values(i) = eval(subs(A, x, x_values(i)));
+    b_values(i) = eval(subs(B, x, x_values(i)));
+end
+
+%% Plot the result
+multiples_of_L_Unlabeled = [-20, -19, -18, -17, -16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+multiples_of_L = [-4, -3.8, -3.6, -3.4, -3.2, -3, -2.8, -2.6, -2.4, -2.2, -2, -1.8, -1.6, -1.4, -1.2, -1, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4];
+
+plot(x_values, f_values);
+hold on;
+plot(x_values, xf_values);
+hold on;
+plot(x_values, a_values);
+hold on;
+plot(x_values, b_values);
+hold off
+
+xlabel('x');
+ylabel('f(x)');
+
+title(['Fourier series of ', char(f)]);
+legend(char(f), 'Fourier Series ', 'an', 'bn');
+
+xticks(multiples_of_L_Unlabeled);
+xticklabels(cellstr(strcat(num2str(multiples_of_L.'), 'L')));
+
+disp("Made By Shawn Michael M. Malinao")
